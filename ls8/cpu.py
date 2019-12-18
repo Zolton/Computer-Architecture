@@ -15,9 +15,9 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        self.reg = [0] * 16
+        self.reg = [0] * 8
         self.pc = 0
-        self.ram = [0] * 16
+        self.ram = [0] * 256
         
 
     def load(self):
@@ -85,6 +85,8 @@ class CPU:
         PRN = 0b01000111
         HLT = 0b00000001 
         MUL = 0b10100010
+        PUSH = 0b01000101
+        POP = 0b01000110
         """Run the CPU."""
         # Load the program
         self.load()
@@ -95,20 +97,27 @@ class CPU:
             instructions = self.ram[self.pc]
             if instructions == LDI:
                 # At this reg location, insert this value
-                self.ram_write(self.ram[self.pc + 1], self.ram[self.pc + 2])
+                reg_num = self.ram[self.pc + 1]
+                value = self.ram[self.pc + 2]
+                self.reg[reg_num] = value
                 self.pc += 3
             elif instructions == PRN:
                 # At this reg location, read the value
-                print(self.ram_read(self.ram[self.pc + 1]))
+                reg_num = self.ram[self.pc + 1]
+                print(self.reg[reg_num])
                 self.pc += 2
             elif instructions == MUL:
-                # At these 2 reg locations, read the values and multiply
-                a = self.ram_read(self.ram[self.pc + 1])
-                b = self.ram_read(self.ram[self.pc + 2])
-                c = a * b
+                # Look at these two reg locations
+                a = self.ram[self.pc + 1]
+                b = self.ram[self.pc + 2]
+                # Read the values at those locations and multiply
+                valueOne = self.reg[a]
+                valueTwo = self.reg[b]
+                c = valueOne * valueTwo
                 # Write the solution into a's former location
-                self.ram_write(self.ram[self.pc + 1], c)
+                self.reg[a] = c
                 self.pc += 3
+                
             elif instructions == HLT:
                 halted = False
                 self.pc += 1
