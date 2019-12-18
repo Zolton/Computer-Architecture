@@ -39,7 +39,8 @@ class CPU:
                     # Insert into RAM as an int, base 2/binary
                     self.ram[address] = int(match, 2)
                     address += 1
-        #print("RMA is: ", self.ram)
+        #print("address is: ", address  
+        self.reg[7] = address
     def ram_write(self, regLocation, value):
         self.reg[regLocation] = value
         #self.pc += 3
@@ -117,7 +118,33 @@ class CPU:
                 # Write the solution into a's former location
                 self.reg[a] = c
                 self.pc += 3
-                
+            elif instructions == PUSH:
+                # Where to look in registry for value
+                reg_num = self.ram[self.pc + 1]
+                # Value pulled from registry
+                value = self.reg[reg_num]
+                # Known empty spot in RAM to store value
+                    # My regex loop ends up with address & self.reg[7] being an empty slot
+                # current_sp = index of empty spot in RAM
+                current_sp = self.reg[7]
+                # Store value in empty spot in RAM
+                self.ram[current_sp] = value
+                # Change pointer to next empty spot in RAM
+                self.reg[7] += 1
+                self.pc += 2
+            
+            elif instructions == POP:
+                # Change pointer to first filled spot in RAM
+                self.reg[7] -= 1
+                current_sp = self.reg[7]
+                # Fetch current value from top of stack
+                value = self.ram[current_sp]
+                # Find out where in registry value is to be saved
+                reg_num = self.ram[self.pc + 1]
+                # Store value in registry
+                self.reg[reg_num] = value
+                # No need to change self.reg - it's been popped, so current_sp is considered empty now
+                self.pc += 2
             elif instructions == HLT:
                 halted = False
                 self.pc += 1
