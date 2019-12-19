@@ -162,7 +162,6 @@ class CPU:
                 self.pc += 2
             
             elif instructions == CALL:
-                #print("starting CALL, pc is: ", self.pc)
                 # Save address in pc of where to go after CALL is done
                 return_address = self.pc + 2
                 # current_sp = index of known empty spot in RAM
@@ -171,29 +170,23 @@ class CPU:
                 self.ram[current_sp] = return_address
                 # Change pointer to next empty spot in RAM for next PUSH
                 self.reg[7] += 1
-                # Tell CALL where to look in registry for instructions
+                # Tell CALL where to look in RAM for instructions
                 location = self.ram[self.pc + 1]
-               # print("Location is: ", location)
                 # Fetch from registry the location of the subroutine
                 subroutine = self.reg[location]
-
-               #print("Subroutine is: ", subroutine)
                 # Jump to subroutine
                 self.pc = subroutine
-               # print("pc is now: ", self.pc)
             
             elif instructions == RET:
                 # Change pointer to first filled spot in RAM
                 self.reg[7] -= 1
+                # Fetch the index of where in RAM to look at
                 current_sp = self.reg[7]
-                # Fetch current value from top of stack
+                # Fetch current value from top of stack/location in RAM
+                # Value is known to be location of next instructions
                 value = self.ram[current_sp]
-                #print("value is: ", value)
-               #print("pc is: ", self.pc)
+                # Jump to next location for instructions to resume program
                 self.pc = value
-                #print("pc is now: ", self.pc)
-
-
 
             elif instructions == HLT:
                 halted = False
