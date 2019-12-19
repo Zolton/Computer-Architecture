@@ -88,6 +88,9 @@ class CPU:
         MUL = 0b10100010
         PUSH = 0b01000101
         POP = 0b01000110
+        CALL = 0b01010000
+        RET = 0b00010001
+        ADD = 0b10100000
         """Run the CPU."""
         # Load the program
         self.load()
@@ -118,6 +121,17 @@ class CPU:
                 # Write the solution into a's former location
                 self.reg[a] = c
                 self.pc += 3
+            elif instructions ==  ADD:
+                # Look at these two reg locations
+                a = self.ram[self.pc + 1]
+                b = self.ram[self.pc + 2]
+                # Read the values at those locations and multiply
+                valueOne = self.reg[a]
+                valueTwo = self.reg[b]
+                c = valueOne + valueTwo
+                # Write the solution into a's former location
+                self.reg[a] = c
+                self.pc += 3
             elif instructions == PUSH:
                 # Where to look in registry for value
                 reg_num = self.ram[self.pc + 1]
@@ -145,6 +159,41 @@ class CPU:
                 self.reg[reg_num] = value
                 # No need to change self.reg - it's been popped, so current_sp is considered empty now
                 self.pc += 2
+            
+            elif instructions == CALL:
+                #print("starting CALL, pc is: ", self.pc)
+                # Save address in pc of where to go after CALL is done
+                return_address = self.pc + 2
+                # current_sp = index of known empty spot in RAM
+                current_sp = self.reg[7]
+                # Store return address in empty spot in RAM
+                self.ram[current_sp] = return_address
+                # Change pointer to next empty spot in RAM for next PUSH
+                self.reg[7] += 1
+                # Tell CALL where to look in registry for instructions
+                location = self.ram[self.pc + 1]
+               # print("Location is: ", location)
+                # Fetch from registry the location of the subroutine
+                subroutine = self.reg[location]
+
+               #print("Subroutine is: ", subroutine)
+                # Jump to subroutine
+                self.pc = subroutine
+               # print("pc is now: ", self.pc)
+            
+            elif instructions == RET:
+                # Change pointer to first filled spot in RAM
+                self.reg[7] -= 1
+                current_sp = self.reg[7]
+                # Fetch current value from top of stack
+                value = self.ram[current_sp]
+                #print("value is: ", value)
+               #print("pc is: ", self.pc)
+                self.pc = value
+                #print("pc is now: ", self.pc)
+
+
+
             elif instructions == HLT:
                 halted = False
                 self.pc += 1
