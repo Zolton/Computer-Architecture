@@ -150,8 +150,9 @@ class CPU:
             elif instructions == POP:
                 # Change pointer to first filled spot in RAM
                 self.reg[7] -= 1
+                # Fetch the index of where in RAM to look at
                 current_sp = self.reg[7]
-                # Fetch current value from top of stack
+                # Fetch current value from top of stack/location in RAM
                 value = self.ram[current_sp]
                 # Find out where in registry value is to be saved
                 reg_num = self.ram[self.pc + 1]
