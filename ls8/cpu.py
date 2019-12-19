@@ -150,6 +150,6 @@ class CPU:
                 self.pc += 1
             else: 
                 print(f"Unknown command at {self.pc}", "Command give: ", self.reg[self.pc])
-
+                sys.exit(1)
 
 
