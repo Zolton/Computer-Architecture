@@ -18,6 +18,9 @@ class CPU:
         self.reg = [0] * 8
         self.pc = 0
         self.ram = [0] * 256
+        self.equalFlag = 0
+        self.greaterFlag = 0
+        self.LesserFlag = 0
         
 
     def load(self):
@@ -91,6 +94,10 @@ class CPU:
         CALL = 0b01010000
         RET = 0b00010001
         ADD = 0b10100000
+        JMP = 0b01010100
+        CMP = 0b10100111
+        JEQ = 0b01010101
+        JNE = 0b01010110
         """Run the CPU."""
         # Load the program
         self.load()
@@ -162,6 +169,9 @@ class CPU:
                 self.pc += 2
             
             elif instructions == CALL:
+
+                # BEWARE - CALL can set the return_address itself, may need an if-statement to check for it
+
                 # Save address in pc of where to go after CALL is done
                 return_address = self.pc + 2
                 # current_sp = index of known empty spot in RAM
@@ -187,6 +197,55 @@ class CPU:
                 value = self.ram[current_sp]
                 # Jump to next location for instructions to resume program
                 self.pc = value
+            
+            elif instructions == JMP:
+                # See where to look in reg
+                value = self.ram[self.pc + 1]
+                # Go here in registry to retrieve an address
+                location = self.reg[value]
+                # Jump to the location given
+                self.pc = location
+            
+            elif instructions == CMP:
+                # Where to look in registry
+                locationOne = self.ram[self.pc + 1]
+                locationTwo = self.ram[self.pc + 2]
+                # Values to be compared
+                valueOne = self.reg[locationOne]
+                valueTwo = self.reg[locationTwo]
+                # Decision tree
+                if valueOne == valueTwo:
+                    self.equalFlag = 1
+                if valueOne > valueTwo:
+                    self.greaterFlag = 1
+                if valueOne < valueTwo:
+                    self.LesserFlag = 1
+                # Regardless of what the flags are set to, continue in the program
+                self.pc += 3
+            
+            elif instructions == JEQ:
+                if self.equalFlag == 1:
+                    # Find where to look in registry
+                    reg_num = self.ram[self.pc + 1]
+                    # Retrieve value from registry
+                    location = self.reg[reg_num]
+                    # Jump
+                    self.pc = location
+                else:
+                    # If not, continue on with program
+                    self.pc += 2
+            
+            elif instructions == JNE:
+                if self.equalFlag == 0:
+                    # Find where to look in registry
+                    reg_num = self.ram[self.pc + 1]
+                    # Retrieve value from registry
+                    location = self.reg[reg_num]
+                    # Jump
+                    self.pc = location
+                else:
+                    # If not, continue on with program
+                    self.pc += 2
 
             elif instructions == HLT:
                 halted = False
